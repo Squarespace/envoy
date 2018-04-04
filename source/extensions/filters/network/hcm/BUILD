@@ -9,9 +9,9 @@ load(
 envoy_package()
 
 envoy_cc_library(
-    name = "http_connection_manager_lib",
-    srcs = ["http_connection_manager.cc"],
-    hdrs = ["http_connection_manager.h"],
+    name = "config",
+    srcs = ["config.cc"],
+    hdrs = ["config.h"],
     deps = [
         "//include/envoy/filesystem:filesystem_interface",
         "//include/envoy/http:filter_interface",
