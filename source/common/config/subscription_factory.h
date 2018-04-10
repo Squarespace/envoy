@@ -40,6 +40,7 @@ public:
       Event::Dispatcher& dispatcher, Upstream::ClusterManager& cm, Runtime::RandomGenerator& random,
       Stats::Scope& scope, std::function<Subscription<ResourceType>*()> rest_legacy_constructor,
       const std::string& rest_method, const std::string& grpc_method) {
+
     std::unique_ptr<Subscription<ResourceType>> result;
     SubscriptionStats stats = Utility::generateStats(scope);
     switch (config.config_source_specifier_case()) {

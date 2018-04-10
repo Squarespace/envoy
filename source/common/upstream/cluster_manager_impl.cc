@@ -60,6 +60,7 @@ void ClusterManagerInitHelper::addCluster(Cluster& cluster) {
 }
 
 void ClusterManagerInitHelper::onClusterInit(Cluster& cluster) {
+  ENVOY_LOG(info, "Doug: CMInitHelper::onClusterInit {}", cluster.info()->name());
   ASSERT(state_ != State::AllClustersInitialized);
   per_cluster_init_callback_(cluster);
   removeCluster(cluster);
@@ -147,6 +148,7 @@ void ClusterManagerInitHelper::setCds(CdsApi* cds) {
   cds_ = cds;
   if (cds_) {
     cds_->setInitializedCb([this]() -> void {
+			ENVOY_LOG(info, "Doug: cds->initializedCb");
       ASSERT(state_ == State::WaitingForCdsInitialize);
       state_ = State::CdsInitialized;
       maybeFinishInitialize();
@@ -285,6 +287,7 @@ ClusterManagerImpl::ClusterManagerImpl(const envoy::config::bootstrap::v2::Boots
 
   // Potentially move to secondary initialization on the static bootstrap clusters if all primary
   // clusters have already initialized. (E.g., if all static).
+  ENVOY_LOG(info, "Doug: static load complete");
   init_helper_.onStaticLoadComplete();
 
   ads_mux_->start();
@@ -306,6 +309,7 @@ ClusterManagerStats ClusterManagerImpl::generateStats(Stats::Scope& scope) {
 }
 
 void ClusterManagerImpl::onClusterInit(Cluster& cluster) {
+	ENVOY_LOG(info, "Doug: ClusterManagerImpl::onClusterInit cluster={}", cluster.info()->name());
   // This routine is called when a cluster has finished initializing. The cluster has not yet
   // been setup for cross-thread updates to avoid needless updates during initialization. The order
   // of operations here is important. We start by initializing the thread aware load balancer if
@@ -546,6 +550,12 @@ void ClusterManagerImpl::postThreadLocalClusterUpdate(const Cluster& cluster, ui
                                                       const HostVector& hosts_added,
                                                       const HostVector& hosts_removed) {
   const auto& host_set = cluster.prioritySet().hostSetsPerPriority()[priority];
+
+	ENVOY_LOG(info, "Doug: postThreadLocalClusterUpdate cluster={}", cluster.info()->name());
+	for (auto const& hadded: hosts_added) {
+		ENVOY_LOG(info, "Doug: host added cluster={} {}", cluster.info()->name(), hadded->address()->asString());
+	}
+
 
   // TODO(htuch): Can we skip these copies by exporting out const shared_ptr from HostSet?
   HostVectorConstSharedPtr hosts_copy(new HostVector(host_set->hosts()));

@@ -31,6 +31,7 @@ EdsClusterImpl::EdsClusterImpl(const envoy::api::v2::Cluster& cluster, Runtime::
   Config::Utility::checkLocalInfo("eds", local_info);
 
   const auto& eds_config = cluster.eds_cluster_config().eds_config();
+	ENVOY_LOG(info, "Doug: EdsClusterImpl constructor create subscription cluster={}", cluster.name());
   subscription_ = Config::SubscriptionFactory::subscriptionFromConfigSource<
       envoy::api::v2::ClusterLoadAssignment>(
       eds_config, local_info.node(), dispatcher, cm, random, info_->statsScope(),
@@ -42,7 +43,10 @@ EdsClusterImpl::EdsClusterImpl(const envoy::api::v2::Cluster& cluster, Runtime::
       "envoy.api.v2.EndpointDiscoveryService.StreamEndpoints");
 }
 
-void EdsClusterImpl::startPreInit() { subscription_->start({cluster_name_}, *this); }
+void EdsClusterImpl::startPreInit() { 
+	ENVOY_LOG(info, "Doug: EdsClusterImpl::startPreInit() {}", cluster_name_);
+	subscription_->start({cluster_name_}, *this); 
+}
 
 void EdsClusterImpl::onConfigUpdate(const ResourceVector& resources) {
   typedef std::unique_ptr<HostVector> HostListPtr;
