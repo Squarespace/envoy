@@ -179,11 +179,24 @@ public:
     cds_api_.reset();
     ads_mux_.reset();
     active_clusters_.clear();
+		eds_mux_map_.clear();
   }
 
   const envoy::api::v2::core::BindConfig& bindConfig() const override { return bind_config_; }
 
   Config::GrpcMux& adsMux() override { return *ads_mux_; }
+	Config::GrpcMux& getOrCreateClusterMux(std::string cluster_name, std::function<Config::GrpcMux&()> mux_creator) override { 
+		auto found = eds_mux_map_.find(cluster_name);
+		if (found != eds_mux_map_.end()) {
+			ENVOY_LOG(info, "Doug: Found existing mux for cluster_name={}", cluster_name);
+			return *found->second;
+		}
+		ENVOY_LOG(info, "Doug: Creating new mux for cluster_name={}", cluster_name);
+		auto& new_mux = mux_creator();
+		eds_mux_map_.emplace(cluster_name, &new_mux);
+		return new_mux;
+	}
+
   Grpc::AsyncClientManager& grpcAsyncClientManager() override { return *async_client_manager_; }
 
   const std::string versionInfo() const override;
@@ -275,6 +288,7 @@ private:
     ClusterSharedPtr cluster_;
     // Optional thread aware LB depending on the LB type. Not all clusters have one.
     ThreadAwareLoadBalancerPtr thread_aware_lb_;
+		Config::GrpcMuxPtr eds_mux_;
   };
 
   struct ClusterUpdateCallbacksHandleImpl : public ClusterUpdateCallbacksHandle {
@@ -289,6 +303,7 @@ private:
 
   typedef std::unique_ptr<ClusterData> ClusterDataPtr;
   typedef std::unordered_map<std::string, ClusterDataPtr> ClusterMap;
+	typedef std::unordered_map<std::string, Config::GrpcMuxPtr> MuxMap;
 
   void createOrUpdateThreadLocalCluster(ClusterData& cluster);
   static ClusterManagerStats generateStats(Stats::Scope& scope);
@@ -299,6 +314,7 @@ private:
                                     const HostVector& hosts_added, const HostVector& hosts_removed);
   void postThreadLocalHealthFailure(const HostSharedPtr& host);
   void updateGauges();
+	ClusterData* findCluster(std::string cluster_name);
 
   ClusterManagerFactory& factory_;
   Runtime::Loader& runtime_;
@@ -314,6 +330,7 @@ private:
   CdsApiPtr cds_api_;
   ClusterManagerStats cm_stats_;
   ClusterManagerInitHelper init_helper_;
+	MuxMap eds_mux_map_;
   Config::GrpcMuxPtr ads_mux_;
   LoadStatsReporterPtr load_stats_reporter_;
   // The name of the local cluster of this Envoy instance if defined, else the empty string.

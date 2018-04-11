@@ -30,7 +30,7 @@ void GrpcMuxImpl::setRetryTimer() {
 }
 
 void GrpcMuxImpl::establishNewStream() {
-  ENVOY_LOG(debug, "Establishing new gRPC bidi stream for {}", service_method_.DebugString());
+  ENVOY_LOG(info, "Establishing new gRPC bidi stream for {}", service_method_.DebugString());
   stream_ = async_client_->start(service_method_, *this);
   if (stream_ == nullptr) {
     ENVOY_LOG(warn, "Unable to establish new stream");

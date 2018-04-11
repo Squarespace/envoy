@@ -521,6 +521,18 @@ void ClusterManagerImpl::updateGauges() {
   cm_stats_.warming_clusters_.set(warming_clusters_.size());
 }
 
+ClusterManagerImpl::ClusterData* ClusterManagerImpl::findCluster(std::string cluster_name) {
+	auto warming = warming_clusters_.find(cluster_name);
+	if (warming != warming_clusters_.end()) {
+		return warming->second.get();
+	}
+	auto active = active_clusters_.find(cluster_name);
+	if (active != active_clusters_.end()) {
+		return active->second.get();
+	}
+	return nullptr;
+}
+
 ThreadLocalCluster* ClusterManagerImpl::get(const std::string& cluster) {
   ThreadLocalClusterManagerImpl& cluster_manager = tls_->getTyped<ThreadLocalClusterManagerImpl>();
 

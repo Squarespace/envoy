@@ -150,6 +150,8 @@ public:
    */
   virtual const envoy::api::v2::core::BindConfig& bindConfig() const PURE;
 
+	virtual Config::GrpcMux& getOrCreateClusterMux(std::string cluster_name, std::function<Config::GrpcMux&()> mux_creator) PURE;
+
   /**
    * Return a reference to the singleton ADS provider for upstream control plane muxing of xDS. This
    * is treated somewhat as a special case in ClusterManager, since it does not relate logically to

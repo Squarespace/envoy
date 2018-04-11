@@ -4,6 +4,7 @@
 #include "envoy/common/pure.h"
 
 #include "common/protobuf/protobuf.h"
+#include "common/common/logger.h"
 
 namespace Envoy {
 namespace Config {
