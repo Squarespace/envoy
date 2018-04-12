@@ -24,22 +24,22 @@ public:
       : grpc_mux_(node, std::move(async_client), dispatcher, service_method),
         grpc_mux_subscription_(grpc_mux_, stats) {
 
-					ENVOY_LOG(info, "Doug: GrpcSubscriptionImpl constructor"); 
-				
-				}
+          ENVOY_LOG(info, "Doug: GrpcSubscriptionImpl constructor"); 
+        
+        }
 
   // Config::Subscription
   void start(const std::vector<std::string>& resources,
              Config::SubscriptionCallbacks<ResourceType>& callbacks) override {
     // Subscribe first, so we get failure callbacks if grpc_mux_.start() fails.
-		
-		std::stringstream resourcestr;
-		resourcestr << "[";
-		for (auto const& resource: resources) {
-			resourcestr << resource << ",";
-		}
-		resourcestr << "]";
-		ENVOY_LOG(info, "Doug: GrpcSubscription Start resources={}", resourcestr.str());
+    
+    std::stringstream resourcestr;
+    resourcestr << "[";
+    for (auto const& resource: resources) {
+      resourcestr << resource << ",";
+    }
+    resourcestr << "]";
+    ENVOY_LOG(info, "Doug: GrpcSubscription Start resources={}", resourcestr.str());
     grpc_mux_subscription_.start(resources, callbacks);
     grpc_mux_.start();
   }

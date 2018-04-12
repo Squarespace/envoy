@@ -148,7 +148,7 @@ void ClusterManagerInitHelper::setCds(CdsApi* cds) {
   cds_ = cds;
   if (cds_) {
     cds_->setInitializedCb([this]() -> void {
-			ENVOY_LOG(info, "Doug: cds->initializedCb");
+      ENVOY_LOG(info, "Doug: cds->initializedCb");
       ASSERT(state_ == State::WaitingForCdsInitialize);
       state_ = State::CdsInitialized;
       maybeFinishInitialize();
@@ -309,7 +309,7 @@ ClusterManagerStats ClusterManagerImpl::generateStats(Stats::Scope& scope) {
 }
 
 void ClusterManagerImpl::onClusterInit(Cluster& cluster) {
-	ENVOY_LOG(info, "Doug: ClusterManagerImpl::onClusterInit cluster={}", cluster.info()->name());
+  ENVOY_LOG(info, "Doug: ClusterManagerImpl::onClusterInit cluster={}", cluster.info()->name());
   // This routine is called when a cluster has finished initializing. The cluster has not yet
   // been setup for cross-thread updates to avoid needless updates during initialization. The order
   // of operations here is important. We start by initializing the thread aware load balancer if
@@ -522,15 +522,15 @@ void ClusterManagerImpl::updateGauges() {
 }
 
 ClusterManagerImpl::ClusterData* ClusterManagerImpl::findCluster(std::string cluster_name) {
-	auto warming = warming_clusters_.find(cluster_name);
-	if (warming != warming_clusters_.end()) {
-		return warming->second.get();
-	}
-	auto active = active_clusters_.find(cluster_name);
-	if (active != active_clusters_.end()) {
-		return active->second.get();
-	}
-	return nullptr;
+  auto warming = warming_clusters_.find(cluster_name);
+  if (warming != warming_clusters_.end()) {
+    return warming->second.get();
+  }
+  auto active = active_clusters_.find(cluster_name);
+  if (active != active_clusters_.end()) {
+    return active->second.get();
+  }
+  return nullptr;
 }
 
 ThreadLocalCluster* ClusterManagerImpl::get(const std::string& cluster) {
@@ -563,10 +563,10 @@ void ClusterManagerImpl::postThreadLocalClusterUpdate(const Cluster& cluster, ui
                                                       const HostVector& hosts_removed) {
   const auto& host_set = cluster.prioritySet().hostSetsPerPriority()[priority];
 
-	ENVOY_LOG(info, "Doug: postThreadLocalClusterUpdate cluster={}", cluster.info()->name());
-	for (auto const& hadded: hosts_added) {
-		ENVOY_LOG(info, "Doug: host added cluster={} {}", cluster.info()->name(), hadded->address()->asString());
-	}
+  ENVOY_LOG(info, "Doug: postThreadLocalClusterUpdate cluster={}", cluster.info()->name());
+  for (auto const& hadded: hosts_added) {
+    ENVOY_LOG(info, "Doug: host added cluster={} {}", cluster.info()->name(), hadded->address()->asString());
+  }
 
 
   // TODO(htuch): Can we skip these copies by exporting out const shared_ptr from HostSet?
