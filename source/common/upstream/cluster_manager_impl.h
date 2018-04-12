@@ -184,7 +184,8 @@ public:
   const envoy::api::v2::core::BindConfig& bindConfig() const override { return bind_config_; }
 
   Config::GrpcMux& adsMux() override { return *ads_mux_; }
-  Config::GrpcMux& getOrCreateClusterMux(std::string cluster_name, std::function<Config::GrpcMux&()> mux_creator) override { 
+  Config::GrpcMux& getOrCreateClusterMux(
+      std::string cluster_name, std::function<Config::GrpcMux&()> mux_creator) override {
     auto cluster = findCluster(cluster_name);
     ASSERT(cluster != nullptr);
     auto& found_mux = cluster->eds_mux_;

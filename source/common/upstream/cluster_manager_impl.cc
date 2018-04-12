@@ -524,10 +524,12 @@ void ClusterManagerImpl::updateGauges() {
 ClusterManagerImpl::ClusterData* ClusterManagerImpl::findCluster(std::string cluster_name) {
   auto warming = warming_clusters_.find(cluster_name);
   if (warming != warming_clusters_.end()) {
+    ENVOY_LOG(info, "Doug: found cluster_name={} in warming", cluster_name);
     return warming->second.get();
   }
   auto active = active_clusters_.find(cluster_name);
   if (active != active_clusters_.end()) {
+    ENVOY_LOG(info, "Doug: found cluster_name={} in active", cluster_name);
     return active->second.get();
   }
   return nullptr;
