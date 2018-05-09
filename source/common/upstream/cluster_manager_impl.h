@@ -191,11 +191,9 @@ public:
     auto& found_mux = cluster->eds_mux_;
 
     if (found_mux) {
-      ENVOY_LOG(info, "Doug: Found existing mux for cluster_name={}", cluster_name);
       return *found_mux.get();
     }
 
-    ENVOY_LOG(info, "Doug: Creating new mux for cluster_name={}", cluster_name);
     auto& new_mux = mux_creator();
     cluster->eds_mux_.reset(&new_mux);
     return new_mux;
