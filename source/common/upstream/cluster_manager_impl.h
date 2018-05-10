@@ -184,6 +184,21 @@ public:
   const envoy::api::v2::core::BindConfig& bindConfig() const override { return bind_config_; }
 
   Config::GrpcMux& adsMux() override { return *ads_mux_; }
+  Config::GrpcMux& getOrCreateClusterMux(
+      std::string cluster_name, std::function<Config::GrpcMux&()> mux_creator) override {
+    auto cluster = findCluster(cluster_name);
+    ASSERT(cluster != nullptr);
+    auto& found_mux = cluster->eds_mux_;
+
+    if (found_mux) {
+      return *found_mux.get();
+    }
+
+    auto& new_mux = mux_creator();
+    cluster->eds_mux_.reset(&new_mux);
+    return new_mux;
+  }
+
   Grpc::AsyncClientManager& grpcAsyncClientManager() override { return *async_client_manager_; }
 
   const std::string versionInfo() const override;
@@ -275,6 +290,7 @@ private:
     ClusterSharedPtr cluster_;
     // Optional thread aware LB depending on the LB type. Not all clusters have one.
     ThreadAwareLoadBalancerPtr thread_aware_lb_;
+    Config::GrpcMuxPtr eds_mux_;
   };
 
   struct ClusterUpdateCallbacksHandleImpl : public ClusterUpdateCallbacksHandle {
@@ -299,6 +315,7 @@ private:
                                     const HostVector& hosts_added, const HostVector& hosts_removed);
   void postThreadLocalHealthFailure(const HostSharedPtr& host);
   void updateGauges();
+  ClusterData* findCluster(std::string cluster_name);
 
   ClusterManagerFactory& factory_;
   Runtime::Loader& runtime_;

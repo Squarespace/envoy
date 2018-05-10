@@ -40,6 +40,18 @@ public:
       Event::Dispatcher& dispatcher, Upstream::ClusterManager& cm, Runtime::RandomGenerator& random,
       Stats::Scope& scope, std::function<Subscription<ResourceType>*()> rest_legacy_constructor,
       const std::string& rest_method, const std::string& grpc_method) {
+
+    return subscriptionFromConfigSource(config, node, dispatcher, cm, random, scope,
+        rest_legacy_constructor, rest_method, grpc_method, false);
+  }
+
+  template <class ResourceType>
+  static std::unique_ptr<Subscription<ResourceType>> subscriptionFromConfigSource(
+      const envoy::api::v2::core::ConfigSource& config, const envoy::api::v2::core::Node& node,
+      Event::Dispatcher& dispatcher, Upstream::ClusterManager& cm, Runtime::RandomGenerator& random,
+      Stats::Scope& scope, std::function<Subscription<ResourceType>*()> rest_legacy_constructor,
+      const std::string& rest_method, const std::string& grpc_method, bool try_stream_mux) {
+
     std::unique_ptr<Subscription<ResourceType>> result;
     SubscriptionStats stats = Utility::generateStats(scope);
     switch (config.config_source_specifier_case()) {
@@ -63,6 +75,23 @@ public:
             *Protobuf::DescriptorPool::generated_pool()->FindMethodByName(rest_method), stats));
         break;
       case envoy::api::v2::core::ApiConfigSource::GRPC: {
+        if (try_stream_mux) {
+          auto& mux = cm.getOrCreateClusterMux(cluster_name,
+              [&cluster_name, &node, &grpc_method, &cm, &config, &scope, &dispatcher]()->Config::GrpcMux& {
+              auto mux = new Config::GrpcMuxImpl(
+                  node,
+                  Config::Utility::factoryForApiConfigSource(
+                      cm.grpcAsyncClientManager(),
+                      config.api_config_source(), scope)->create(),
+                    dispatcher,
+                    *Protobuf::DescriptorPool::generated_pool()->FindMethodByName(grpc_method));
+              mux->start();
+              return *mux;
+          });
+          result.reset(new GrpcMuxSubscriptionImpl<ResourceType>(mux, stats));
+          break;
+        }
+
         result.reset(new GrpcSubscriptionImpl<ResourceType>(
             node,
             Config::Utility::factoryForGrpcApiConfigSource(cm.grpcAsyncClientManager(),

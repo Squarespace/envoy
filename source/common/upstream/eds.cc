@@ -39,10 +39,13 @@ EdsClusterImpl::EdsClusterImpl(const envoy::api::v2::Cluster& cluster, Runtime::
         return new SdsSubscription(info_->stats(), eds_config, cm, dispatcher, random);
       },
       "envoy.api.v2.EndpointDiscoveryService.FetchEndpoints",
-      "envoy.api.v2.EndpointDiscoveryService.StreamEndpoints");
+      "envoy.api.v2.EndpointDiscoveryService.StreamEndpoints",
+      true);
 }
 
-void EdsClusterImpl::startPreInit() { subscription_->start({cluster_name_}, *this); }
+void EdsClusterImpl::startPreInit() {
+  subscription_->start({cluster_name_}, *this);
+}
 
 void EdsClusterImpl::onConfigUpdate(const ResourceVector& resources) {
   typedef std::unique_ptr<HostVector> HostListPtr;
