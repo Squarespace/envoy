@@ -12,7 +12,7 @@ namespace Envoy {
 namespace Config {
 
 template <class ResourceType>
-class GrpcSubscriptionImpl : public Config::Subscription<ResourceType>, protected Logger::Loggable<Logger::Id::upstream> {
+class GrpcSubscriptionImpl : public Config::Subscription<ResourceType> {
 public:
   GrpcSubscriptionImpl(const envoy::api::v2::core::Node& node, Grpc::AsyncClientPtr async_client,
                        Event::Dispatcher& dispatcher,
