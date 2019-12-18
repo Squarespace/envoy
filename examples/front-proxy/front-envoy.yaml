@@ -1,3 +1,9 @@
+stats_config:
+  stats_matcher:
+    inclusion_list:
+      patterns:
+      - regex: "cluster.*"
+
 static_resources:
   listeners:
   - address:
