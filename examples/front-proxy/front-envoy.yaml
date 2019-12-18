@@ -27,6 +27,9 @@ static_resources:
                 route:
                   cluster: service2
           http_filters:
+          - name: envoy.health_check
+            config:
+              pass_through_mode: false
           - name: envoy.router
             typed_config: {}
   clusters:
